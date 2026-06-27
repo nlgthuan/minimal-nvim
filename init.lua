@@ -1,0 +1,127 @@
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.cursorline = true
+vim.opt.wrap = false
+vim.opt.scrolloff = 10
+vim.opt.colorcolumn = "80"
+vim.opt.signcolumn = "yes"
+vim.opt.mouse = "a"
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.incsearch = true
+vim.opt.tabstop = 2
+vim.opt.shiftwidth = 2
+vim.opt.expandtab = true
+vim.opt.swapfile = false
+vim.opt.updatetime = 250
+vim.opt.timeoutlen = 300
+
+vim.opt.complete = '.,w,b,o'
+vim.opt.completeopt = 'menuone,noselect,fuzzy'
+vim.opt.autocomplete = true
+
+vim.diagnostic.config({ virtual_text = true })
+
+
+vim.keymap.set({ 'n', 'v' }, '<leader>y', [["+y]], { desc = "Copy to clipboard" })
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>gl', vim.diagnostic.open_float, { desc = 'Open diagnostic float' })
+vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action)
+vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
+vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+vim.api.nvim_create_autocmd('TextYankPost', {
+  desc = 'Highlight when yanking',
+  group = vim.api.nvim_create_augroup('highlight-yank', { clear = true }),
+  callback = function()
+    vim.highlight.on_yank()
+  end,
+})
+
+vim.lsp.enable({ "lua_ls", "ts_ls", "pyright", "gopls", "postgres_lsp", "texlab", "jdtls", "hls" })
+
+-- [[ Plugins ]]
+vim.pack.add({
+  'https://github.com/stevearc/conform.nvim',
+  'https://github.com/stevearc/oil.nvim',
+  'https://github.com/neovim/nvim-lspconfig',
+  'https://github.com/nvim-treesitter/nvim-treesitter',
+  'https://github.com/lewis6991/gitsigns.nvim',
+  'https://github.com/nvim-telescope/telescope.nvim',
+  'https://github.com/nvim-lua/plenary.nvim'
+})
+
+
+require("oil").setup()
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+
+
+local conform = require("conform")
+conform.setup({
+  notify_on_error = true,
+  formatters_by_ft = {
+    lua = { 'stylua' },
+    python = { 'isort', 'black' },
+    ['_'] = { 'insert_final_newline' },
+  },
+  default_format_opts = {
+    lsp_format = "fallback",
+  },
+})
+vim.keymap.set('n', '<leader>f', function()
+    conform.format()
+    vim.cmd('write')
+  end,
+  { desc = '[F]ormat buffer' }
+)
+
+
+local langs = {
+  "c",
+  "lua",
+  "vim",
+  "vimdoc",
+  "query",
+  "markdown",
+  "markdown_inline",
+  "python",
+  "go",
+  "latex",
+  "java",
+  "haskell",
+  "typescript",
+  "javascript",
+}
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = langs,
+  callback = function() vim.treesitter.start() end,
+})
+
+require("gitsigns").setup({
+  current_line_blame = true,
+})
+
+require('telescope').setup {
+  defaults = {
+    mappings = {
+      i = { ['<c-q>'] = 'smart_send_to_qflist' },
+    },
+  },
+}
+
+local ts_builtin = require('telescope.builtin')
+vim.keymap.set('n', '<leader>sf', ts_builtin.find_files, { desc = 'Telescope find files' })
+vim.keymap.set('n', '<leader>sc', function()
+  ts_builtin.find_files { cwd = vim.fn.stdpath("config") }
+end, { desc = 'Telescope find config' })
+vim.keymap.set('n', '<leader>sb', ts_builtin.buffers, { desc = 'Telescope buffers' })
+vim.keymap.set('n', '<leader>sh', ts_builtin.help_tags, { desc = 'Telescope help tags' })
+vim.keymap.set("n", "<leader>gr", ts_builtin.lsp_references)
+vim.keymap.set("n", "gd", ts_builtin.lsp_definitions)
+vim.keymap.set("n", "gI", ts_builtin.lsp_implementations)
