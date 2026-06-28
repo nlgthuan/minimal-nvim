@@ -1,5 +1,4 @@
 vim.g.mapleader = ' '
-vim.g.maplocalleader = ' '
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.cursorline = true
@@ -91,7 +90,7 @@ vim.keymap.set('n', '<leader>f', function()
 )
 
 vim.api.nvim_create_autocmd('FileType', {
-    callback = function() pcall(vim.treesitter.start) end,
+  callback = function() pcall(vim.treesitter.start) end,
 })
 
 require("gitsigns").setup({
@@ -120,3 +119,4 @@ vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch curren
 vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
 vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
 vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
+vim.keymap.set('n', '<leader>sm', builtin.marks, { desc = '[S]earch [M]arks' })
