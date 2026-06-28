@@ -14,6 +14,7 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.swapfile = false
+vim.opt.winborder = "rounded"
 
 vim.opt.complete = '.,w,b,o'
 vim.opt.completeopt = 'menuone,noselect,fuzzy'
