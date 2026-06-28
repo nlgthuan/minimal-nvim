@@ -15,8 +15,6 @@ vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
 vim.opt.expandtab = true
 vim.opt.swapfile = false
-vim.opt.updatetime = 250
-vim.opt.timeoutlen = 300
 
 vim.opt.complete = '.,w,b,o'
 vim.opt.completeopt = 'menuone,noselect,fuzzy'
@@ -34,7 +32,7 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 vim.keymap.set('n', '<leader>gl', vim.diagnostic.open_float, { desc = 'Open diagnostic float' })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action)
 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename)
-vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+vim.keymap.set('n', '<C-c>', '<cmd>nohlsearch<CR>')
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking',
@@ -54,11 +52,22 @@ vim.pack.add({
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/lewis6991/gitsigns.nvim',
   'https://github.com/nvim-telescope/telescope.nvim',
-  'https://github.com/nvim-lua/plenary.nvim'
+  'https://github.com/nvim-lua/plenary.nvim',
+  'https://github.com/nvim-tree/nvim-web-devicons',
+  { src = "https://github.com/catppuccin/nvim", name = "catppuccin" },
+  {
+    src = "https://github.com/kylechui/nvim-surround",
+    version = vim.version.range("4.x"),
+  },
 })
 
+vim.cmd("colorscheme catppuccin-mocha")
 
-require("oil").setup()
+require("oil").setup({
+  view_options = {
+    show_hidden = true,
+  },
+})
 vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
 
@@ -81,26 +90,24 @@ vim.keymap.set('n', '<leader>f', function()
   { desc = '[F]ormat buffer' }
 )
 
-
-local langs = {
-  "c",
-  "lua",
-  "vim",
-  "vimdoc",
-  "query",
-  "markdown",
-  "markdown_inline",
-  "python",
-  "go",
-  "latex",
-  "java",
-  "haskell",
-  "typescript",
-  "javascript",
-}
 vim.api.nvim_create_autocmd('FileType', {
-  pattern = langs,
-  callback = function() vim.treesitter.start() end,
+  pattern = "*",
+  callback = function(args)
+    local buf = args.buf
+    local ft = vim.bo[buf].filetype
+
+    local lang = vim.treesitter.language.get_lang(ft)
+    if not lang then
+      return
+    end
+
+    local ok_add = pcall(vim.treesitter.language.add, lang)
+    if not ok_add then
+      return
+    end
+
+    pcall(vim.treesitter.start, buf, lang)
+  end,
 })
 
 require("gitsigns").setup({
@@ -115,13 +122,17 @@ require('telescope').setup {
   },
 }
 
-local ts_builtin = require('telescope.builtin')
-vim.keymap.set('n', '<leader>sf', ts_builtin.find_files, { desc = 'Telescope find files' })
+local builtin = require('telescope.builtin')
+vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<leader>sc', function()
-  ts_builtin.find_files { cwd = vim.fn.stdpath("config") }
+  builtin.find_files { cwd = vim.fn.stdpath("config") }
 end, { desc = 'Telescope find config' })
-vim.keymap.set('n', '<leader>sb', ts_builtin.buffers, { desc = 'Telescope buffers' })
-vim.keymap.set('n', '<leader>sh', ts_builtin.help_tags, { desc = 'Telescope help tags' })
-vim.keymap.set("n", "<leader>gr", ts_builtin.lsp_references)
-vim.keymap.set("n", "gd", ts_builtin.lsp_definitions)
-vim.keymap.set("n", "gI", ts_builtin.lsp_implementations)
+vim.keymap.set('n', '<leader>sb', builtin.buffers, { desc = 'Telescope buffers' })
+vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = 'Telescope help tags' })
+vim.keymap.set("n", "<leader>gr", builtin.lsp_references)
+vim.keymap.set("n", "gd", builtin.lsp_definitions)
+vim.keymap.set("n", "gI", builtin.lsp_implementations)
+vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
+vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
